@@ -1,17 +1,41 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>
-      Tab 1
-    </ion-title>
+    <ion-title>Recipes</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar>
-      <ion-title size="large">Tab 1</ion-title>
+      <ion-title size="large">Recipes</ion-title>
     </ion-toolbar>
   </ion-header>
 
-  <app-explore-container name="Tab 1 page"></app-explore-container>
+  <!-- Welcome Section -->
+  <div class="welcome-container">
+    <div class="welcome-icon">🍳</div>
+    <h1>Welcome to RecipesGalore!</h1>
+    <p class="welcome-text">
+      Your digital cookbook, powered by the community.
+    </p>
+
+    <!-- Search Bar Placeholder -->
+    <ion-searchbar 
+      placeholder="Search recipes..." 
+      disabled
+      class="search-placeholder">
+    </ion-searchbar>
+
+    <!-- Coming Soon Message -->
+    <ion-card class="coming-soon-card">
+      <ion-card-content>
+        <div class="coming-soon-icon">🚧</div>
+        <h3>Recipes Coming Soon!</h3>
+        <p>
+          We're cooking up something special. Recipe browsing 
+          will be available in the next update.
+        </p>
+      </ion-card-content>
+    </ion-card>
+  </div>
 </ion-content>
