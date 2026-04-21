@@ -106,15 +106,32 @@ ion-content {
   --background: var(--rg-cream);
 }
 
-/* Toolbar/Header */
+/* Toolbar/Header - RecipesGalore Branded */
 ion-toolbar {
   --background: var(--rg-gradient-primary);
   --color: white;
+  --padding-top: 0.5rem;
+  --padding-bottom: 0.5rem;
+  --min-height: 64px;
+}
+
+/* Add subtle shadow to headers for depth */
+ion-header {
+  box-shadow: 0 2px 8px rgba(225, 112, 85, 0.15);
 }
 
 ion-title {
   font-weight: 700;
   font-size: 1.2rem;
+  letter-spacing: 0.3px;
+  line-height: 1;
+}
+
+/* Large title in collapsible header */
+ion-title[size="large"] {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--rg-dark-gray);
 }
 
 /* Tabs */
@@ -132,25 +149,60 @@ ion-tab-button {
   font-weight: 500;
 }
 
-/* Cards */
+/* Cards - Enhanced with warm styling */
 ion-card {
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  border: 2px solid var(--rg-peachy);
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(225, 112, 85, 0.12);
+  border: 1px solid rgba(225, 112, 85, 0.15);
+  background: white;
+  transition: all 0.3s ease;
+}
+
+ion-card:hover {
+  box-shadow: 0 6px 16px rgba(225, 112, 85, 0.18);
+  transform: translateY(-2px);
 }
 
 ion-card-header {
-  padding: 1rem;
+  padding: 1.25rem;
+  border-bottom: 1px solid var(--rg-light-peach);
+}
+
+ion-card-title {
+  color: var(--rg-dark-gray);
+  font-weight: 700;
+}
+
+ion-card-subtitle {
+  color: var(--rg-gray);
 }
 
 ion-card-content {
-  padding: 1rem;
+  padding: 1.25rem;
+  color: var(--rg-dark-gray);
 }
 
-/* List items */
+/* List items - Enhanced styling */
+ion-list {
+  background: transparent;
+}
+
 ion-item {
-  --background: transparent;
-  --border-color: var(--rg-peachy);
+  --background: white;
+  --border-color: rgba(225, 112, 85, 0.1);
+  --padding-start: 1rem;
+  --padding-end: 1rem;
+  --inner-padding-end: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+ion-item:hover:not([disabled]) {
+  --background: rgba(225, 112, 85, 0.05);
+}
+
+ion-list-header {
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 /* Utility classes */
