@@ -1,7 +1,19 @@
 import { Component } from '@angular/core';
 import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { restaurant, heart, person, personCircle, notificationsOutline, settingsOutline, helpCircleOutline, informationCircleOutline } from 'ionicons/icons';
+import { 
+  restaurant, 
+  heart, 
+  person, 
+  personCircle, 
+  notificationsOutline, 
+  settingsOutline, 
+  helpCircleOutline, 
+  informationCircleOutline,
+  alertCircle,
+  logoGoogle,
+  logoApple
+} from 'ionicons/icons';
 
 @Component({
   selector: 'app-root',
@@ -10,7 +22,7 @@ import { restaurant, heart, person, personCircle, notificationsOutline, settings
 })
 export class AppComponent {
   constructor() {
-    // Register icons for RecipesGalore tabs and profile
+    // Register icons for RecipesGalore tabs, profile, and authentication
     addIcons({
       'restaurant': restaurant,
       'heart': heart,
@@ -20,6 +32,9 @@ export class AppComponent {
       'settings-outline': settingsOutline,
       'help-circle-outline': helpCircleOutline,
       'information-circle-outline': informationCircleOutline,
+      'alert-circle': alertCircle,
+      'logo-google': logoGoogle,
+      'logo-apple': logoApple,
     });
   }
 }
