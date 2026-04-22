@@ -49,11 +49,22 @@ export class AuthService {
   private initAuthListener(): void {
     onAuthStateChanged(this.auth, async (firebaseUser: FirebaseUser | null) => {
       if (firebaseUser) {
-        // User is signed in, fetch their profile
-        const user = await this.getUserProfile(firebaseUser.uid);
+        console.log('User signed in:', firebaseUser.email);
+        
+        // Check if user profile exists
+        let user = await this.getUserProfile(firebaseUser.uid);
+        
+        // If profile doesn't exist, create it
+        if (!user) {
+          console.log('Creating user profile in Firestore...');
+          await this.createUserProfile(firebaseUser, 'email');
+          user = await this.getUserProfile(firebaseUser.uid);
+        }
+        
         this.currentUserSubject.next(user);
       } else {
         // User is signed out
+        console.log('User signed out');
         this.currentUserSubject.next(null);
       }
     });
