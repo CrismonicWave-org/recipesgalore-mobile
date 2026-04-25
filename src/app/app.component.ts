@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { 
@@ -15,14 +16,18 @@ import {
   logoApple,
   logOutOutline
 } from 'ionicons/icons';
+import { AuthService } from './services/auth.service';
 
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
   imports: [IonApp, IonRouterOutlet],
 })
-export class AppComponent {
-  constructor() {
+export class AppComponent implements OnInit {
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) {
     // Register icons for RecipesGalore tabs, profile, and authentication
     addIcons({
       'restaurant': restaurant,
@@ -37,6 +42,24 @@ export class AppComponent {
       'logo-google': logoGoogle,
       'logo-apple': logoApple,
       'log-out-outline': logOutOutline,
+    });
+  }
+
+  ngOnInit() {
+    // Handle initial routing based on auth state
+    this.authService.currentUser$.subscribe(user => {
+      const currentUrl = this.router.url;
+      
+      // Only redirect on initial load (root path)
+      if (currentUrl === '/' || currentUrl === '') {
+        if (user) {
+          console.log('App Init: User authenticated, redirecting to /tabs/recipes');
+          this.router.navigate(['/tabs/recipes'], { replaceUrl: true });
+        } else {
+          console.log('App Init: No user, redirecting to /login');
+          this.router.navigate(['/login'], { replaceUrl: true });
+        }
+      }
     });
   }
 }
