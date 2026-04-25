@@ -1,0 +1,137 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Sign Up</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Sign Up</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="signup-container">
+    <!-- Logo/Branding -->
+    <div class="signup-header">
+      <div class="logo-icon">🍳</div>
+      <h1>Join RecipesGalore!</h1>
+      <p class="subtitle">Create an account to save your favorite recipes</p>
+    </div>
+
+    <!-- Error Message -->
+    <ion-card *ngIf="errorMessage" class="error-card">
+      <ion-card-content>
+        <ion-icon name="alert-circle" class="error-icon"></ion-icon>
+        {{ errorMessage }}
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Signup Form -->
+    <form class="signup-form" (ngSubmit)="onSubmit()">
+      <!-- Display Name Input (Optional) -->
+      <ion-item class="input-item">
+        <ion-input
+          type="text"
+          placeholder="Display Name (optional)"
+          [(ngModel)]="displayName"
+          name="displayName"
+          [disabled]="loading"
+        ></ion-input>
+      </ion-item>
+
+      <!-- Email Input -->
+      <ion-item class="input-item">
+        <ion-input
+          type="email"
+          placeholder="Email"
+          [(ngModel)]="email"
+          name="email"
+          required
+          [disabled]="loading"
+        ></ion-input>
+      </ion-item>
+
+      <!-- Password Input -->
+      <ion-item class="input-item">
+        <ion-input
+          type="password"
+          placeholder="Password (min 6 characters)"
+          [(ngModel)]="password"
+          name="password"
+          required
+          [disabled]="loading"
+        ></ion-input>
+      </ion-item>
+
+      <!-- Confirm Password Input -->
+      <ion-item class="input-item">
+        <ion-input
+          type="password"
+          placeholder="Confirm Password"
+          [(ngModel)]="confirmPassword"
+          name="confirmPassword"
+          required
+          [disabled]="loading"
+        ></ion-input>
+      </ion-item>
+
+      <!-- Password Mismatch Warning -->
+      <div *ngIf="password && confirmPassword && password !== confirmPassword" class="password-mismatch">
+        <ion-icon name="alert-circle"></ion-icon>
+        Passwords don't match
+      </div>
+
+      <!-- Sign Up Button -->
+      <ion-button
+        expand="block"
+        type="submit"
+        class="signup-button"
+        [disabled]="loading || !email || !password || !confirmPassword || password !== confirmPassword"
+      >
+        <ion-spinner *ngIf="loading" name="crescent"></ion-spinner>
+        <span *ngIf="!loading">Create Account</span>
+      </ion-button>
+    </form>
+
+    <!-- Divider -->
+    <div class="divider">
+      <span>or sign up with</span>
+    </div>
+
+    <!-- Social Signup Buttons -->
+    <div class="social-buttons">
+      <!-- Google Sign-Up -->
+      <ion-button
+        expand="block"
+        fill="outline"
+        class="social-button google-button"
+        (click)="onGoogleSignUp()"
+        [disabled]="loading"
+      >
+        <ion-icon slot="start" name="logo-google"></ion-icon>
+        Sign up with Google
+      </ion-button>
+
+      <!-- Apple Sign-Up -->
+      <ion-button
+        expand="block"
+        fill="outline"
+        class="social-button apple-button"
+        (click)="onAppleSignUp()"
+        [disabled]="loading"
+      >
+        <ion-icon slot="start" name="logo-apple"></ion-icon>
+        Sign up with Apple
+      </ion-button>
+    </div>
+
+    <!-- Sign In Link -->
+    <div class="signin-link">
+      <p>
+        Already have an account?
+        <a (click)="onSignIn()">Sign In</a>
+      </p>
+    </div>
+  </div>
+</ion-content>
