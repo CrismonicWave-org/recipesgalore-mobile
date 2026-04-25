@@ -12,7 +12,8 @@ import {
   informationCircleOutline,
   alertCircle,
   logoGoogle,
-  logoApple
+  logoApple,
+  logOutOutline
 } from 'ionicons/icons';
 
 @Component({
@@ -35,6 +36,7 @@ export class AppComponent {
       'alert-circle': alertCircle,
       'logo-google': logoGoogle,
       'logo-apple': logoApple,
+      'log-out-outline': logOutOutline,
     });
   }
 }

@@ -29,6 +29,33 @@
   margin: 0;
 }
 
+/* Sign Out Section */
+.signout-section {
+  padding: 1.5rem 1rem 1rem;
+  background: transparent;
+}
+
+.signout-button {
+  --border-color: var(--rg-orange);
+  --color: var(--rg-orange);
+  --border-radius: 12px;
+  --padding-top: 1rem;
+  --padding-bottom: 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: none;
+  
+  ion-icon {
+    font-size: 1.3rem;
+  }
+
+  &:hover {
+    --background: rgba(225, 112, 85, 0.1);
+    --color: var(--rg-red);
+    --border-color: var(--rg-red);
+  }
+}
+
 .settings-list {
   margin-top: 1rem;
   background: transparent;

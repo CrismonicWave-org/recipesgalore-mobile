@@ -19,6 +19,14 @@
       <p class="subtitle">Sign in to access your recipes and favorites</p>
     </div>
 
+    <!-- Sign Up Link (Prominent) -->
+    <div class="signup-link-top">
+      <p>
+        Don't have an account?
+        <a (click)="onSignUp()" class="signup-link-button">Sign Up</a>
+      </p>
+    </div>
+
     <!-- Error Message -->
     <ion-card *ngIf="errorMessage" class="error-card">
       <ion-card-content>
@@ -100,14 +108,6 @@
         <ion-icon slot="start" name="logo-apple"></ion-icon>
         Sign in with Apple
       </ion-button>
-    </div>
-
-    <!-- Sign Up Link -->
-    <div class="signup-link">
-      <p>
-        Don't have an account?
-        <a (click)="onSignUp()">Sign Up</a>
-      </p>
     </div>
   </div>
 </ion-content>

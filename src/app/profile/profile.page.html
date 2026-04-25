@@ -16,8 +16,22 @@
     <div class="avatar">
       <ion-icon name="person-circle" class="avatar-icon"></ion-icon>
     </div>
-    <h2>Guest User</h2>
-    <p class="subtitle">Sign in to save your favorites</p>
+    <h2>{{ currentUser?.displayName || currentUser?.email || 'Guest User' }}</h2>
+    <p class="subtitle" *ngIf="currentUser?.email">{{ currentUser?.email }}</p>
+    <p class="subtitle" *ngIf="!currentUser">Sign in to save your favorites</p>
+  </div>
+
+  <!-- Sign Out Button -->
+  <div class="signout-section" *ngIf="currentUser">
+    <ion-button 
+      expand="block" 
+      fill="outline"
+      class="signout-button"
+      (click)="onSignOut()"
+    >
+      <ion-icon slot="start" name="log-out-outline"></ion-icon>
+      Sign Out
+    </ion-button>
   </div>
 
   <!-- Settings List -->

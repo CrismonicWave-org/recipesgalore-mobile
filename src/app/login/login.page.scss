@@ -214,6 +214,39 @@ ion-input {
   }
 }
 
+/* Sign Up Link at Top (Prominent) */
+.signup-link-top {
+  text-align: center;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, rgba(225, 112, 85, 0.05), rgba(196, 69, 105, 0.05));
+  border-radius: 12px;
+  border: 2px solid rgba(225, 112, 85, 0.15);
+  
+  p {
+    color: var(--rg-dark-gray);
+    font-size: 1rem;
+    margin: 0;
+    font-weight: 500;
+  }
+  
+  a.signup-link-button {
+    color: var(--rg-orange);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+
+    &:hover {
+      color: var(--rg-red);
+      background: rgba(225, 112, 85, 0.1);
+    }
+  }
+}
+
 /* Responsive Adjustments */
 @media (max-width: 576px) {
   .login-container {
