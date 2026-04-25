@@ -1,8 +1,14 @@
 import { Routes } from '@angular/router';
+import { authRedirectGuard } from './guards/auth-redirect.guard';
 
 export const routes: Routes = [
   {
     path: '',
+    canActivate: [authRedirectGuard],
+    children: []
+  },
+  {
+    path: 'tabs',
     loadChildren: () => import('./tabs/tabs.routes').then((m) => m.routes),
   },
   {
