@@ -26,6 +26,7 @@ export interface UserCredentials {
  * Auth error messages
  */
 export const AUTH_ERRORS: { [key: string]: string } = {
+  'auth/invalid-credential': 'Invalid email or password. Please try again.',
   'auth/email-already-in-use': 'This email is already registered. Please sign in instead.',
   'auth/invalid-email': 'Please enter a valid email address.',
   'auth/operation-not-allowed': 'This sign-in method is not enabled. Please contact support.',
@@ -36,5 +37,11 @@ export const AUTH_ERRORS: { [key: string]: string } = {
   'auth/too-many-requests': 'Too many failed attempts. Please try again later.',
   'auth/network-request-failed': 'Network error. Please check your connection.',
   'auth/popup-closed-by-user': 'Sign-in cancelled.',
+  'auth/account-exists-with-different-credential': 'An account already exists with this email using a different sign-in method.',
+  'auth/credential-already-in-use': 'This credential is already associated with another account.',
+  'auth/invalid-verification-code': 'Invalid verification code.',
+  'auth/invalid-verification-id': 'Invalid verification ID.',
+  'auth/missing-verification-code': 'Please enter the verification code.',
+  'auth/missing-verification-id': 'Missing verification ID.',
   'default': 'An error occurred. Please try again.'
 };

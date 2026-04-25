@@ -110,6 +110,9 @@ export class AuthService {
       await signInWithEmailAndPassword(this.auth, email, password);
       
     } catch (error: any) {
+      console.error('Firebase Auth Error:', error);
+      console.error('Error code:', error.code);
+      console.error('Error message:', error.message);
       throw new Error(this.getErrorMessage(error.code));
     } finally {
       this.loadingSubject.next(false);
