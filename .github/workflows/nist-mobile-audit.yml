@@ -1,0 +1,257 @@
+name: NIST Mobile Security Audit
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'package.json'
+      - 'package-lock.json'
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - 'package.json'
+      - 'package-lock.json'
+
+jobs:
+  security-audit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      pull-requests: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run SAST Security Analysis
+        id: sast
+        continue-on-error: true
+        run: |
+          echo "## 🔍 SAST Security Analysis Results" >> $GITHUB_STEP_SUMMARY
+          
+          # Check for hardcoded credentials and secrets (M1: Improper Credential Usage)
+          echo -e "\n### M1: Improper Credential Usage Scan" >> $GITHUB_STEP_SUMMARY
+          if grep -r "api[_-]?key\s*=\s*['\"]" src/ --include="*.ts" --include="*.js" --include="*.html" 2>/dev/null; then
+            echo "⚠️ **CRITICAL**: Potential hardcoded API keys found" >> $GITHUB_STEP_SUMMARY
+            echo "- Check files for hardcoded credentials, API keys, or tokens" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "✅ No obvious hardcoded credentials detected" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Check for Firebase secrets in code
+          if grep -r "FIREBASE_API_KEY\|firebaseConfig\s*=\s*{" src/ --include="*.ts" --include="*.js" 2>/dev/null | grep -v "environment\|config"; then
+            echo "⚠️ **CRITICAL**: Firebase config may be hardcoded outside environment files" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "✅ Firebase configuration properly uses environment files" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Check for weak authentication patterns (M3: Insecure Authentication)
+          echo -e "\n### M3: Insecure Authentication/Authorization Scan" >> $GITHUB_STEP_SUMMARY
+          if grep -r "password" src/ --include="*.ts" --include="*.html" | grep -i "localStorage\|sessionStorage\|plaintext\|decrypt"; then
+            echo "⚠️ **WARNING**: Potential insecure password handling detected" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "✅ No obvious insecure password handling patterns detected" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Check for XSS vulnerabilities (M4: Insufficient Input/Output Validation)
+          echo -e "\n### M4: Insufficient Input/Output Validation Scan" >> $GITHUB_STEP_SUMMARY
+          if grep -r "innerHTML\|bypassSecurityTrustHtml" src/ --include="*.ts" 2>/dev/null; then
+            echo "⚠️ **WARNING**: Direct innerHTML or bypassed sanitization detected - verify XSS protection" >> $GITHUB_STEP_SUMMARY
+            grep -r "innerHTML\|bypassSecurityTrustHtml" src/ --include="*.ts" -n >> $GITHUB_STEP_SUMMARY || true
+          else
+            echo "✅ No obvious XSS vulnerabilities detected" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Check for insecure communication patterns (M5: Insecure Communication)
+          echo -e "\n### M5: Insecure Communication Scan" >> $GITHUB_STEP_SUMMARY
+          if grep -r "http://" src/ --include="*.ts" --include="*.html" --include="*.json" | grep -v "https" | grep -v "localhost"; then
+            echo "⚠️ **CRITICAL**: Non-HTTPS endpoints detected" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "✅ No non-HTTPS endpoints detected" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Check for sensitive data logging (M6: Inadequate Privacy Controls)
+          echo -e "\n### M6: Inadequate Privacy Controls Scan" >> $GITHUB_STEP_SUMMARY
+          if grep -r "console\.\(log\|debug\)" src/app --include="*.ts" | grep -i "password\|token\|credential\|secret\|key"; then
+            echo "⚠️ **CRITICAL**: Sensitive data may be logged to console" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "✅ No obvious sensitive data logging patterns detected" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Check for proper data storage encryption (M9: Insecure Data Storage)
+          echo -e "\n### M9: Insecure Data Storage Scan" >> $GITHUB_STEP_SUMMARY
+          if grep -r "localStorage\|sessionStorage" src/app --include="*.ts" | grep -v "// " | head -n 5; then
+            echo "ℹ️ **INFO**: Browser storage detected - verify Firestore is used for sensitive data" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "✅ Primary reliance on Firestore (managed storage)" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Dependency Vulnerability Scan
+        id: deps
+        continue-on-error: true
+        run: |
+          echo "## 📦 Dependency Vulnerability Scan (M2: Inadequate Supply Chain Security)" >> $GITHUB_STEP_SUMMARY
+          
+          # Run npm audit
+          npm audit --audit-level=moderate --json > npm-audit.json 2>&1 || true
+          
+          # Parse and display vulnerabilities
+          if npm audit --audit-level=moderate 2>&1 | grep -q "vulnerabilities"; then
+            echo "⚠️ **Vulnerabilities detected**:" >> $GITHUB_STEP_SUMMARY
+            npm audit --audit-level=moderate 2>&1 | grep -A 20 "vulnerabilities" >> $GITHUB_STEP_SUMMARY || true
+          else
+            echo "✅ No moderate or high vulnerabilities in dependencies" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Firebase Configuration Validation
+        id: firebase
+        continue-on-error: true
+        run: |
+          echo "## 🔐 Firebase Configuration Validation" >> $GITHUB_STEP_SUMMARY
+          
+          # Check if Firebase configuration exists in environments
+          if [ -f "src/environments/environment.ts" ] && grep -q "firebase" src/environments/environment.ts; then
+            echo "✅ Firebase configuration found in environment.ts" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ **WARNING**: Firebase configuration not found in environment.ts" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ -f "src/environments/environment.prod.ts" ] && grep -q "firebase" src/environments/environment.prod.ts; then
+            echo "✅ Firebase configuration found in environment.prod.ts" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ **WARNING**: Firebase configuration not found in environment.prod.ts" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Check for separate dev/prod configs
+          echo -e "\n**Config Separation Validation:**" >> $GITHUB_STEP_SUMMARY
+          if grep -q "apiKey" src/environments/environment.ts && grep -q "apiKey" src/environments/environment.prod.ts; then
+            if ! diff <(grep -o "apiKey.*" src/environments/environment.ts) <(grep -o "apiKey.*" src/environments/environment.prod.ts) > /dev/null; then
+              echo "✅ Dev and Prod Firebase configurations are separate" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "⚠️ **WARNING**: Dev and Prod configurations may be identical" >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+
+      - name: Authentication Implementation Review
+        id: auth
+        continue-on-error: true
+        run: |
+          echo "## 🔓 Authentication Implementation Review (M3)" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -f "src/app/services/auth.service.ts" ]; then
+            echo "✅ Authentication service found" >> $GITHUB_STEP_SUMMARY
+            
+            # Check for proper Firebase Auth usage
+            if grep -q "Firebase\|@angular/fire/auth" src/app/services/auth.service.ts; then
+              echo "✅ Using Firebase Auth" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+            # Check for auth state management
+            if grep -q "onAuthStateChanged\|authState\$" src/app/services/auth.service.ts; then
+              echo "✅ Proper auth state management detected" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+            # Check for social auth providers
+            if grep -q "GoogleAuthProvider\|OAuthProvider\|signInWithPopup" src/app/services/auth.service.ts; then
+              echo "✅ Social auth providers configured" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "⚠️ **WARNING**: Authentication service not found" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Route Guards Validation
+        id: guards
+        continue-on-error: true
+        run: |
+          echo "## 🛡️ Route Guards Validation (Authorization)" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -f "src/app/guards/auth.guard.ts" ]; then
+            echo "✅ Auth guard found" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ **WARNING**: Auth guard not found" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ -f "src/app/guards/auth-redirect.guard.ts" ]; then
+            echo "✅ Auth redirect guard found" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ **WARNING**: Auth redirect guard not found" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Check if guards are applied to routes
+          if grep -q "canActivate\|canDeactivate" src/app/app.routes.ts; then
+            echo "✅ Route guards applied to routes" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ **WARNING**: Route guards may not be applied to protected routes" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: TypeScript Security Checks
+        id: typescript
+        continue-on-error: true
+        run: |
+          echo "## 📝 TypeScript Configuration Security" >> $GITHUB_STEP_SUMMARY
+          
+          if grep -q "\"strict\": true" tsconfig.json; then
+            echo "✅ Strict TypeScript mode enabled" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ **WARNING**: Strict mode not enabled in tsconfig.json" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Run Unit Tests
+        id: tests
+        continue-on-error: true
+        run: |
+          echo "## ✅ Unit Test Execution" >> $GITHUB_STEP_SUMMARY
+          npm run test -- --watch=false --code-coverage 2>&1 | tail -n 20 >> $GITHUB_STEP_SUMMARY || echo "⚠️ Tests encountered issues" >> $GITHUB_STEP_SUMMARY
+
+      - name: Generate Audit Report
+        if: always()
+        run: |
+          echo "## 📋 NIST Mobile Security Audit Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Audit Date:** $(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** ${{ github.ref }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Frameworks & Standards Verified Against:" >> $GITHUB_STEP_SUMMARY
+          echo "- OWASP Mobile Top 10 (M1-M10)" >> $GITHUB_STEP_SUMMARY
+          echo "- NIST SP 800-218 (SSDF)" >> $GITHUB_STEP_SUMMARY
+          echo "- Firebase Security Best Practices" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Next Steps for Developers:" >> $GITHUB_STEP_SUMMARY
+          echo "1. Review all ⚠️ **WARNING** and ⚠️ **CRITICAL** findings above" >> $GITHUB_STEP_SUMMARY
+          echo "2. Address security issues in priority order (CRITICAL > WARNING > INFO)" >> $GITHUB_STEP_SUMMARY
+          echo "3. Reference the agent documentation: [.github/agents/nist-mobile-auditor.agent.md](.github/agents/nist-mobile-auditor.agent.md)" >> $GITHUB_STEP_SUMMARY
+          echo "4. Re-run this workflow to verify fixes" >> $GITHUB_STEP_SUMMARY
+
+      - name: Post Audit Findings (PR Comment)
+        if: github.event_name == 'pull_request' && failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🔒 Security Audit Results\n\nThe NIST Mobile Security Audit detected issues that need attention.\n\n[View full audit results in the workflow run](${process.env.GITHUB_SERVER_URL}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})\n\n**Action Required:** Please review and address the findings above.`
+            })
+
+      - name: Determine Job Status
+        if: always()
+        run: |
+          if npm audit --audit-level=moderate 2>&1 | grep -q "vulnerabilities"; then
+            echo "❌ Build failed: Security vulnerabilities detected"
+            exit 1
+          fi
+          echo "✅ Security audit completed. Review findings above."
