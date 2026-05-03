@@ -1,0 +1,113 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Sign In</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Sign In</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="login-container">
+    <!-- Logo/Branding -->
+    <div class="login-header">
+      <div class="logo-icon">🍳</div>
+      <h1>Welcome Back!</h1>
+      <p class="subtitle">Sign in to access your recipes and favorites</p>
+    </div>
+
+    <!-- Sign Up Link (Prominent) -->
+    <div class="signup-link-top">
+      <p>
+        Don't have an account?
+        <a (click)="onSignUp()" class="signup-link-button">Sign Up</a>
+      </p>
+    </div>
+
+    <!-- Error Message -->
+    <ion-card *ngIf="errorMessage" class="error-card">
+      <ion-card-content>
+        <ion-icon name="alert-circle" class="error-icon"></ion-icon>
+        {{ errorMessage }}
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Login Form -->
+    <form class="login-form" (ngSubmit)="onSubmit()">
+      <!-- Email Input -->
+      <ion-item class="input-item">
+        <ion-input
+          type="email"
+          placeholder="Email"
+          [(ngModel)]="email"
+          name="email"
+          required
+          [disabled]="loading"
+        ></ion-input>
+      </ion-item>
+
+      <!-- Password Input -->
+      <ion-item class="input-item">
+        <ion-input
+          type="password"
+          placeholder="Password"
+          [(ngModel)]="password"
+          name="password"
+          required
+          [disabled]="loading"
+        ></ion-input>
+      </ion-item>
+
+      <!-- Forgot Password Link -->
+      <div class="forgot-password">
+        <a (click)="onForgotPassword()">Forgot Password?</a>
+      </div>
+
+      <!-- Sign In Button -->
+      <ion-button
+        expand="block"
+        type="submit"
+        class="signin-button"
+        [disabled]="loading || !email || !password"
+      >
+        <ion-spinner *ngIf="loading" name="crescent"></ion-spinner>
+        <span *ngIf="!loading">Sign In</span>
+      </ion-button>
+    </form>
+
+    <!-- Divider -->
+    <div class="divider">
+      <span>or continue with</span>
+    </div>
+
+    <!-- Social Login Buttons -->
+    <div class="social-buttons">
+      <!-- Google Sign-In -->
+      <ion-button
+        expand="block"
+        fill="outline"
+        class="social-button google-button"
+        (click)="onGoogleSignIn()"
+        [disabled]="loading"
+      >
+        <ion-icon slot="start" name="logo-google"></ion-icon>
+        Sign in with Google
+      </ion-button>
+
+      <!-- Apple Sign-In -->
+      <ion-button
+        expand="block"
+        fill="outline"
+        class="social-button apple-button"
+        (click)="onAppleSignIn()"
+        [disabled]="loading"
+      >
+        <ion-icon slot="start" name="logo-apple"></ion-icon>
+        Sign in with Apple
+      </ion-button>
+    </div>
+  </div>
+</ion-content>

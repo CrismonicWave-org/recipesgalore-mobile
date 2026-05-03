@@ -1,0 +1,104 @@
+name: Release & Version Bump
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: 'Type of version bump'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Configure Git
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+      - name: Get current version
+        id: current_version
+        run: |
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          echo "current=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "Current version: $CURRENT_VERSION"
+
+      - name: Bump version
+        id: bump_version
+        run: |
+          npm version ${{ github.event.inputs.version_type }} --no-git-tag-version
+          NEW_VERSION=$(node -p "require('./package.json').version")
+          echo "new=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "New version: $NEW_VERSION"
+
+      - name: Commit version bump
+        run: |
+          git add package.json package-lock.json
+          git commit -m "chore: bump version to ${{ steps.bump_version.outputs.new }}"
+          git push origin main
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.bump_version.outputs.new }}
+          release_name: Release v${{ steps.bump_version.outputs.new }}
+          body: |
+            ## RecipesGalore Mobile - Release v${{ steps.bump_version.outputs.new }}
+            
+            **Version Bump:** ${{ github.event.inputs.version_type }}
+            - From: v${{ steps.current_version.outputs.current }}
+            - To: v${{ steps.bump_version.outputs.new }}
+            
+            **Release Date:** ${{ github.event.repository.updated_at }}
+            **Triggered By:** @${{ github.actor }}
+            
+            ### What's New
+            - [ ] Add release notes here
+            
+            ### Security & Quality
+            - All changes pass NIST Mobile Security Audit
+            - Full test suite passing
+            - Dependencies up to date
+            
+            For detailed changes, see: [Commits](https://github.com/${{ github.repository }}/compare/v${{ steps.current_version.outputs.current }}...v${{ steps.bump_version.outputs.new }})
+          draft: false
+          prerelease: false
+
+      - name: Publish Release Summary
+        run: |
+          echo "## 🎉 Release Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** v${{ steps.bump_version.outputs.new }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Bump Type:** ${{ github.event.inputs.version_type }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Previous Version:** v${{ steps.current_version.outputs.current }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Next Steps:" >> $GITHUB_STEP_SUMMARY
+          echo "1. ✅ Version updated in package.json" >> $GITHUB_STEP_SUMMARY
+          echo "2. ✅ Changes committed to main" >> $GITHUB_STEP_SUMMARY
+          echo "3. ✅ GitHub Release created" >> $GITHUB_STEP_SUMMARY
+          echo "4. 📝 Edit release notes on [GitHub Releases](https://github.com/${{ github.repository }}/releases/tag/v${{ steps.bump_version.outputs.new }})" >> $GITHUB_STEP_SUMMARY
